@@ -20,7 +20,7 @@ require 'test_case'
 
 # do not use the file executable normally in our tests as
 # it may not be present on the machine we are running on
-FileColumn::ClassMethods::DEFAULT_OPTIONS = 
+FileColumn::ClassMethods::DEFAULT_OPTIONS =
   FileColumn::ClassMethods::DEFAULT_OPTIONS.merge({:file_exec => nil})
 
 class ActiveRecord::Base
@@ -46,7 +46,7 @@ class Test::Unit::TestCase
 
 
   private
-  
+
   def normalize_path(path)
     Pathname.new(path).realpath
   end

@@ -64,6 +64,6 @@
 0.1.1 (2005-08-11)
     * fixed nasty bug in url_for_file_column that made it unusable on Apache
     * prepared for public release
-    
+
 0.1 (2005-08-10)
     * initial release

@@ -10,7 +10,7 @@ Running ...
 
 > cd vendor/plugins/file_column/ ; rake
 
-... will run 
+... will run
 
   sh "cd test; ruby file_column_test.rb"
   sh "cd test; ruby file_column_helper_test.rb"
