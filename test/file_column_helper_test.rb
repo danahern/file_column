@@ -42,7 +42,7 @@ class UrlForFileColumnTest < Test::Unit::TestCase
     url = url_for_file_column(:e, :image)
     assert_equal "/entry/image/#{@e.id}/skanthak.png", url
   end
-  
+
   def test_url_for_file_column_works_with_object
     e = Entry.new(:image => upload(f("skanthak.png")))
     assert e.save
@@ -98,14 +98,14 @@ class UrlForFileColumnTest < Test::Unit::TestCase
     e = Entry.new(:image => upload(f("skanthak.png")))
     html = link_to "Download", url_for_file_column(e, "image", :absolute => true)
     url = html.scan(/href=\"(.+)\"/).first.first
-    
+
     assert_match IMAGE_URL, url
   end
 
   def test_relative_url_root_not_modified
     e = Entry.new(:image => upload(f("skanthak.png")))
     url_for_file_column(e, "image", :absolute => true)
-    
+
     assert_equal "/foo/bar", @request.relative_url_root
   end
 end

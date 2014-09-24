@@ -11,7 +11,7 @@ end
 
 
 class FileColumnTest < Test::Unit::TestCase
-  
+
   def setup
     # we define the file_columns here so that we can change
     # settings easily in a single test
@@ -22,21 +22,21 @@ class FileColumnTest < Test::Unit::TestCase
 
     clear_validations
   end
-  
+
   def teardown
     FileUtils.rm_rf File.dirname(__FILE__)+"/public/entry/"
     FileUtils.rm_rf File.dirname(__FILE__)+"/public/movie/"
     FileUtils.rm_rf File.dirname(__FILE__)+"/public/my_store_dir/"
   end
-  
+
   def test_column_write_method
     assert Entry.new.respond_to?("image=")
   end
-  
+
   def test_column_read_method
     assert Entry.new.respond_to?("image")
   end
-  
+
   def test_sanitize_filename
     assert_equal "test.jpg", FileColumn::sanitize_filename("test.jpg")
     assert FileColumn::sanitize_filename("../../very_tricky/foo.bar") !~ /[\\\/]/, "slashes not removed"
@@ -44,21 +44,21 @@ class FileColumnTest < Test::Unit::TestCase
     assert_equal "foo.txt", FileColumn::sanitize_filename('c:\temp\foo.txt')
     assert_equal "_.", FileColumn::sanitize_filename(".")
   end
-  
+
   def test_default_options
     e = Entry.new
     assert_match %r{/public/entry/image}, e.image_options[:store_dir]
     assert_match %r{/public/entry/image/tmp}, e.image_options[:tmp_base_dir]
   end
-  
+
   def test_assign_without_save_with_tempfile
     do_test_assign_without_save(:tempfile)
   end
-  
+
   def test_assign_without_save_with_stringio
     do_test_assign_without_save(:stringio)
   end
-  
+
   def do_test_assign_without_save(upload_type)
     e = Entry.new
     e.image = uploaded_file(file_path("skanthak.png"), "image/png", "skanthak.png", upload_type)
@@ -66,18 +66,18 @@ class FileColumnTest < Test::Unit::TestCase
     assert File.exists?(e.image)
     assert FileUtils.identical?(e.image, file_path("skanthak.png"))
   end
-  
+
   def test_filename_preserved
     e = Entry.new
     e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "local_filename.jpg")
     assert_equal "local_filename.jpg", File.basename(e.image)
   end
-  
+
   def test_filename_stored_in_attribute
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     assert_equal "kerb.jpg", e["image"]
   end
-  
+
   def test_extension_added
     e = Entry.new
     e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "local_filename")
@@ -172,7 +172,7 @@ class FileColumnTest < Test::Unit::TestCase
   def test_correct_extension
     e = Entry.new
     file = FileColumn::TempUploadedFile.new(e, "image")
-    
+
     assert_equal "filename.jpg", file.correct_extension("filename.jpeg","jpg")
     assert_equal "filename.tar.gz", file.correct_extension("filename.jpg","tar.gz")
     assert_equal "filename.jpg", file.correct_extension("filename.tar.gz","jpg")
@@ -191,7 +191,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert_equal "#{e.id}/kerb.jpg", e.image_relative_path
     assert !File.exists?(tmp_file_path), "temporary file '#{tmp_file_path}' not removed"
     assert !File.exists?(File.dirname(tmp_file_path)), "temporary directory '#{File.dirname(tmp_file_path)}' not removed"
-    
+
     local_path = e.image
     e = Entry.find(e.id)
     assert_equal local_path, e.image
@@ -201,7 +201,7 @@ class FileColumnTest < Test::Unit::TestCase
     e = Entry.new
     e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg")
     e.save
-    
+
     assert_equal_paths File.join(RAILS_ROOT, "public", "entry", "image", e.id.to_s), e.image_dir
     assert_equal File.join(e.id.to_s), e.image_relative_dir
   end
@@ -210,22 +210,22 @@ class FileColumnTest < Test::Unit::TestCase
     Entry.file_column :image, {:store_dir => :my_store_dir}
     e = Entry.new
 
-    e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg")    
+    e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg")
     assert e.save
-    
-    assert_equal_paths File.join(RAILS_ROOT, "public", "my_store_dir", e.id.to_s), e.image_dir   
+
+    assert_equal_paths File.join(RAILS_ROOT, "public", "my_store_dir", e.id.to_s), e.image_dir
   end
 
   def test_tmp_dir_with_store_dir_callback
     Entry.file_column :image, {:store_dir => :my_store_dir}
     e = Entry.new
     e.image = upload(f("kerb.jpg"))
-    
+
     assert_equal File.expand_path(File.join(RAILS_ROOT, "public", "my_store_dir", "tmp")), File.expand_path(File.join(e.image_dir,".."))
   end
 
   def test_invalid_store_dir_callback
-    Entry.file_column :image, {:store_dir => :my_store_dir_doesnt_exit}    
+    Entry.file_column :image, {:store_dir => :my_store_dir_doesnt_exit}
     e = Entry.new
     assert_raise(ArgumentError) {
       e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg")
@@ -240,12 +240,12 @@ class FileColumnTest < Test::Unit::TestCase
     assert_nil e.image(nil)
 
     e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg")
-    
+
     assert_equal "kerb.jpg", File.basename(e.image("thumb"))
     assert_equal "kerb.jpg", File.basename(e.image_relative_path("thumb"))
 
     assert_equal File.join(e.image_dir,"thumb","kerb.jpg"), e.image("thumb")
-    assert_match %r{/thumb/kerb\.jpg$}, e.image_relative_path("thumb") 
+    assert_match %r{/thumb/kerb\.jpg$}, e.image_relative_path("thumb")
 
     assert_equal e.image, e.image(nil)
     assert_equal e.image_relative_path, e.image_relative_path(nil)
@@ -260,7 +260,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert !File.exists?(local_path), "'#{local_path}' still exists although entry was destroyed"
     assert !File.exists?(File.dirname(local_path))
   end
-  
+
   def test_keep_tmp_image
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     e.validation_should_fail = true
@@ -272,7 +272,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert e.save
     assert FileUtils.identical?(e.image, file_path("kerb.jpg"))
   end
-  
+
   def test_keep_tmp_image_with_existing_image
     e = Entry.new("image" =>uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     assert e.save
@@ -285,19 +285,19 @@ class FileColumnTest < Test::Unit::TestCase
     e = Entry.find(e.id)
     e.image_temp = temp_path
     assert e.save
-    
+
     assert FileUtils.identical?(e.image, file_path("skanthak.png"))
     assert !File.exists?(local_path), "old image has not been deleted"
   end
-  
+
   def test_replace_tmp_image_temp_first
     do_test_replace_tmp_image([:image_temp, :image])
   end
-  
+
   def test_replace_tmp_image_temp_last
     do_test_replace_tmp_image([:image, :image_temp])
   end
-  
+
   def do_test_replace_tmp_image(order)
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     e.validation_should_fail = true
@@ -318,7 +318,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert !File.exists?(File.dirname(temp_path)), "temporary directory not cleaned up"
     assert e.image_just_uploaded?
   end
-  
+
   def test_replace_image_on_saved_object
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     assert e.save
@@ -330,7 +330,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert old_file != e.image
     assert !File.exists?(old_file), "'#{old_file}' has not been cleaned up"
   end
-  
+
   def test_edit_without_touching_image
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     assert e.save
@@ -338,14 +338,14 @@ class FileColumnTest < Test::Unit::TestCase
     assert e.save
     assert FileUtils.identical?(file_path("kerb.jpg"), e.image)
   end
-  
+
   def test_save_without_image
     e = Entry.new
     assert e.save
     e.reload
     assert_nil e.image
   end
-  
+
   def test_delete_saved_image
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     assert e.save
@@ -361,7 +361,7 @@ class FileColumnTest < Test::Unit::TestCase
     e = Entry.find(e.id)
     assert_nil e.image
   end
-  
+
   def test_delete_tmp_image
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     local_path = e.image
@@ -370,7 +370,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert e["image"].blank?
     assert !File.exists?(local_path)
   end
-  
+
   def test_delete_nonexistant_image
     e = Entry.new
     e.image = nil
@@ -394,13 +394,13 @@ class FileColumnTest < Test::Unit::TestCase
     assert e.image_relative_path =~ /^tmp\/[\d\.]+\/kerb\.jpg$/, "relative path '#{e.image_relative_path}' was not as expected"
     assert File.exists?(e.image)
   end
-  
+
   def test_just_uploaded?
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", 'c:\images\kerb.jpg'))
     assert e.image_just_uploaded?
     assert e.save
     assert e.image_just_uploaded?
-    
+
     e = Entry.new("image" => uploaded_file(file_path("kerb.jpg"), "image/jpeg", 'kerb.jpg'))
     temp_path = e.image_temp
     e = Entry.new("image_temp" => temp_path)
@@ -408,13 +408,13 @@ class FileColumnTest < Test::Unit::TestCase
     assert e.save
     assert !e.image_just_uploaded?
   end
-  
+
   def test_empty_tmp
     e = Entry.new
     e.image_temp = ""
     assert_nil e.image
   end
-  
+
   def test_empty_tmp_with_image
     e = Entry.new
     e.image_temp = ""
@@ -424,7 +424,7 @@ class FileColumnTest < Test::Unit::TestCase
     e.image_temp = ""
     assert local_path, e.image
   end
-  
+
   def test_empty_filename
     e = Entry.new
 #    assert_equal "", e["file"]
@@ -434,7 +434,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert_nil e["image"]
     assert_nil e.image
   end
-  
+
   def test_with_two_file_columns
     e = Entry.new
     e.image = uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg")
@@ -445,7 +445,7 @@ class FileColumnTest < Test::Unit::TestCase
     assert FileUtils.identical?(e.image, file_path("kerb.jpg"))
     assert FileUtils.identical?(e.file, file_path("skanthak.png"))
   end
-  
+
   def test_with_two_models
     e = Entry.new(:image => uploaded_file(file_path("kerb.jpg"), "image/jpeg", "kerb.jpg"))
     m = Movie.new(:movie => uploaded_file(file_path("skanthak.png"), "image/png", "skanthak.png"))
@@ -481,8 +481,8 @@ class FileColumnTest < Test::Unit::TestCase
   def test_serializable_before_save
     e = Entry.new
     e.image = uploaded_file(file_path("skanthak.png"), "image/png", "skanthak.png")
-    assert_nothing_raised { 
-      flash = Marshal.dump(e) 
+    assert_nothing_raised {
+      flash = Marshal.dump(e)
       e = Marshal.load(flash)
     }
     assert File.exists?(e.image)
@@ -498,7 +498,7 @@ class FileColumnTest < Test::Unit::TestCase
   def test_should_call_user_after_save_on_save
     e = Entry.new(:image => upload(f("skanthak.png")))
     assert e.save
-    
+
     assert_kind_of FileColumn::PermanentUploadedFile, e.send(:image_state)
     assert e.after_save_called?
   end
@@ -507,10 +507,10 @@ class FileColumnTest < Test::Unit::TestCase
   def test_assign_standard_files
     e = Entry.new
     e.image = File.new(file_path('skanthak.png'))
-    
+
     assert_equal 'skanthak.png', File.basename(e.image)
     assert FileUtils.identical?(file_path('skanthak.png'), e.image)
-    
+
     assert e.save
   end
 
@@ -529,7 +529,7 @@ class FileColumnTest < Test::Unit::TestCase
   def test_validates_file_format_simple
     e = Entry.new(:image => upload(f("skanthak.png")))
     assert e.save
-    
+
     Entry.validates_file_format_of :image, :in => ["jpg"]
 
     e.image = upload(f("kerb.jpg"))
@@ -538,12 +538,12 @@ class FileColumnTest < Test::Unit::TestCase
     e.image = upload(f("mysql.sql"))
     assert !e.save
     assert e.errors.invalid?("image")
-    
+
   end
 
   def test_validates_image_size
     Entry.validates_image_size :image, :min => "640x480"
-    
+
     e = Entry.new(:image => upload(f("kerb.jpg")))
     assert e.save
 
@@ -554,7 +554,7 @@ class FileColumnTest < Test::Unit::TestCase
 
   def do_permission_test(uploaded_file, permissions=0641)
     Entry.file_column :image, :permissions => permissions
-    
+
     e = Entry.new(:image => uploaded_file)
     assert e.save
 
@@ -579,16 +579,16 @@ class FileColumnTest < Test::Unit::TestCase
     # strange event. Since we would create a path that contains nothing
     # where the id would have been, we should fail fast with an exception
     # in this case
-    
+
     e = Entry.new(:image => upload(f("skanthak.png")))
     assert e.save
     id = e.id
 
     e = Entry.find(id)
-    
+
     e["id"] = ""
     assert_raise(RuntimeError) { e.image }
-    
+
     e = Entry.find(id)
     e["id"] = nil
     assert_raise(RuntimeError) { e.image }
@@ -597,15 +597,15 @@ end
 
 # Tests for moving temp dir to permanent dir
 class FileColumnMoveTest < Test::Unit::TestCase
-  
+
   def setup
     # we define the file_columns here so that we can change
     # settings easily in a single test
 
     Entry.file_column :image
-    
+
   end
-  
+
   def teardown
     FileUtils.rm_rf File.dirname(__FILE__)+"/public/entry/"
   end
@@ -622,10 +622,10 @@ class FileColumnMoveTest < Test::Unit::TestCase
 
   def test_should_move_direcotries_on_save
     e = Entry.new(:image => upload(f("skanthak.png")))
-    
+
     FileUtils.mkdir( e.image_dir+"/foo" )
     FileUtils.cp file_path("kerb.jpg"), e.image_dir+"/foo/kerb.jpg"
-    
+
     assert e.save
 
     assert File.exists?(e.image)
@@ -653,7 +653,7 @@ class FileColumnMoveTest < Test::Unit::TestCase
 
     e.image = upload(f("kerb.jpg"))
     FileUtils.mkdir(e.image_dir+"/skanthak.png")
-    
+
     assert e.save
     assert File.file?(e.image_dir+"/kerb.jpg")
     assert !File.file?(e.image_dir+"/skanthak.png")

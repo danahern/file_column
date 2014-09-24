@@ -7,7 +7,7 @@ ActiveRecord::Schema.define do
 		# be blank.  Therefore, I 'fixed' it.
 		t.column :file, :string, :null => true	#false
 	end
-	
+
 	create_table :movies, :force => true do |t|
 		t.column :movie, :string
 	end

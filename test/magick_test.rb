@@ -35,7 +35,7 @@ class RMagickSimpleTest < AbstractRMagickTest
   def test_simple_resize_without_save
     e = Entry.new
     e.image = upload(f("kerb.jpg"))
-    
+
     img = read_image(e.image)
     assert_max_image_size img, 100
   end
@@ -45,20 +45,20 @@ class RMagickSimpleTest < AbstractRMagickTest
     e.image = upload(f("kerb.jpg"))
     assert e.save
     e.reload
-    
+
     img = read_image(e.image)
     assert_max_image_size img, 100
   end
 
   def test_resize_on_saved_image
     Entry.file_column :image, :magick => { :geometry => "100x100" }
-    
+
     e = Entry.new
     e.image = upload(f("skanthak.png"))
     assert e.save
     e.reload
     old_path = e.image
-    
+
     e.image = upload(f("kerb.jpg"))
     assert e.save
     assert "kerb.jpg", File.basename(e.image)
@@ -95,7 +95,7 @@ end
 
 class RMagickRequiresImageTest < AbstractRMagickTest
   def setup
-    Entry.file_column :image, :magick => { 
+    Entry.file_column :image, :magick => {
       :size => "100x100>",
       :image_required => false,
       :versions => {
@@ -149,7 +149,7 @@ class RMagickCustomAttributesTest < AbstractRMagickTest
     e = Entry.new("image" => upload(f("kerb.jpg")))
     assert_image_property e.image("thumb"), :quality, 20, "the quality was not set"
   end
-  
+
   def test_lazy_attributes
     Entry.file_column :image, :magick => {
       :versions => {
@@ -176,15 +176,15 @@ class RMagickVersionsTest < AbstractRMagickTest
 
   def test_should_create_thumb
     e = Entry.new("image" => upload(f("skanthak.png")))
-    
+
     assert File.exists?(e.image("thumb")), "thumb-nail not created"
-    
+
     assert_max_image_size read_image(e.image("thumb")), 50
   end
 
   def test_version_name_can_be_different_from_key
     e = Entry.new("image" => upload(f("skanthak.png")))
-    
+
     assert File.exists?(e.image("100_100"))
     assert !File.exists?(e.image("medium"))
   end
@@ -196,17 +196,17 @@ class RMagickVersionsTest < AbstractRMagickTest
 
   def test_should_create_lazy_version_on_demand
     e = Entry.new("image" => upload(f("skanthak.png")))
-    
+
     e.send(:image_state).create_magick_version_if_needed(:large)
-    
+
     assert File.exists?(e.image("large")), "lazy version should be created on demand"
-    
+
     assert_max_image_size read_image(e.image("large")), 150
   end
 
   def test_generated_name_should_not_change
     e = Entry.new("image" => upload(f("skanthak.png")))
-    
+
     name1 = e.send(:image_state).create_magick_version_if_needed("50x50")
     name2 = e.send(:image_state).create_magick_version_if_needed("50x50")
     name3 = e.send(:image_state).create_magick_version_if_needed(:geometry => "50x50")
@@ -216,9 +216,9 @@ class RMagickVersionsTest < AbstractRMagickTest
 
   def test_should_create_version_with_string
     e = Entry.new("image" => upload(f("skanthak.png")))
-    
+
     name = e.send(:image_state).create_magick_version_if_needed("32x32")
-    
+
     assert File.exists?(e.image(name))
 
     assert_max_image_size read_image(e.image(name)), 32
@@ -241,16 +241,16 @@ class RMagickCroppingTest < AbstractRMagickTest
       }
     }
   end
-  
+
   def test_should_crop_image_on_upload
     e = Entry.new("image" => upload(f("skanthak.png")))
-    
+
     img = read_image(e.image("thumb"))
-    
-    assert_equal 50, img.rows 
+
+    assert_equal 50, img.rows
     assert_equal 50, img.columns
   end
-    
+
 end
 
 class UrlForImageColumnTest < AbstractRMagickTest
@@ -258,14 +258,14 @@ class UrlForImageColumnTest < AbstractRMagickTest
 
   def setup
     Entry.file_column :image, :magick => {
-      :versions => {:thumb => "50x50"} 
+      :versions => {:thumb => "50x50"}
     }
     @request = RequestMock.new
   end
-    
+
   def test_should_use_version_on_symbol_option
     e = Entry.new(:image => upload(f("skanthak.png")))
-    
+
     url = url_for_image_column(e, "image", :thumb)
     assert_match %r{^/entry/image/tmp/.+/thumb/skanthak.png$}, url
   end
@@ -274,12 +274,12 @@ class UrlForImageColumnTest < AbstractRMagickTest
     e = Entry.new(:image => upload(f("skanthak.png")))
 
     url = url_for_image_column(e, "image", "50x50")
-    
+
     assert_match %r{^/entry/image/tmp/.+/.+/skanthak.png$}, url
-    
+
     url =~ /\/([^\/]+)\/skanthak.png$/
     dirname = $1
-    
+
     assert_max_image_size read_image(e.image(dirname)), 50
   end
 
@@ -304,7 +304,7 @@ class RMagickPermissionsTest < AbstractRMagickTest
       }
     }, :permissions => 0616
   end
-  
+
   def check_permissions(e)
     assert_equal 0616, (File.stat(e.image).mode & 0777)
     assert_equal 0616, (File.stat(e.image("thumb")).mode & 0777)
@@ -312,7 +312,7 @@ class RMagickPermissionsTest < AbstractRMagickTest
 
   def test_permissions_with_rmagick
     e = Entry.new(:image => upload(f("skanthak.png")))
-    
+
     check_permissions e
 
     assert e.save
@@ -321,7 +321,7 @@ class RMagickPermissionsTest < AbstractRMagickTest
   end
 end
 
-class Entry 
+class Entry
   def transform_grey(img)
     img.quantize(256, Magick::GRAYColorspace)
   end
@@ -332,13 +332,13 @@ class RMagickTransformationTest < AbstractRMagickTest
     assert File.exists?(image), "the image does not exist"
     assert 256 > read_image(image).number_colors, "the number of colors was not changed"
   end
-  
+
   def test_simple_transformation
     Entry.file_column :image, :magick => { :transformation => Proc.new { |image| image.quantize(256, Magick::GRAYColorspace) } }
     e = Entry.new("image" => upload(f("skanthak.png")))
     assert_transformed(e.image)
   end
-  
+
   def test_simple_version_transformation
     Entry.file_column :image, :magick => {
       :versions => { :thumb => Proc.new { |image| image.quantize(256, Magick::GRAYColorspace) } }
@@ -346,7 +346,7 @@ class RMagickTransformationTest < AbstractRMagickTest
     e = Entry.new("image" => upload(f("skanthak.png")))
     assert_transformed(e.image("thumb"))
   end
-  
+
   def test_complex_version_transformation
     Entry.file_column :image, :magick => {
       :versions => {
@@ -356,7 +356,7 @@ class RMagickTransformationTest < AbstractRMagickTest
     e = Entry.new("image" => upload(f("skanthak.png")))
     assert_transformed(e.image("thumb"))
   end
-  
+
   def test_lazy_transformation
     Entry.file_column :image, :magick => {
       :versions => {
